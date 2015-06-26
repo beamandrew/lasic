@@ -1,5 +1,7 @@
 library(glmnet)
 library(ggplot2)
+library(magrittr)
+library(dplyr)
 
 lasic <- function(fit,X,y,plotit=FALSE) {
   lambda.seq <- fit$lambda
@@ -22,17 +24,17 @@ lasic <- function(fit,X,y,plotit=FALSE) {
   results.df$DF <- as.numeric(results.df$DF)
   results.df$Type <- as.factor(results.df$Type)
   results.df$Value <- as.numeric(results.df$Value)
+  best.bic <- results.df %>% filter(Type=="BIC") %>% filter(Value == min(Value))
+  best.aic <- results.df %>% filter(Type=="AIC") %>% filter(Value == min(Value))
   if(plotit) {
-    best.bic <- results.df %>%
-    x.best <- results.df$Lambda[best.point]
-    y.best <- results.df$Value[best.point]
-    lbl <- paste0("Num Non-zero: ",results.df$DF[best.point])
+    lbl <- paste0("BIC Nonzero: ",best.bic$DF,"\nAIC Nonzero: ",best.aic$DF)
     ggplot(results.df,aes(x=log(Lambda),y=Value,color=Type)) + 
-      geom_line(size=1.5) + 
-      geom_vline(xintercept=x.best) +
-      annotate("text",label=lbl,x=x.best,y=y.best) +
+      geom_line(size=1) + 
+      annotate("text",label=lbl,x=log(median(results.df$Lambda)),y=max(results.df$Value)) +
       theme_bw()
   }
+  return(list(AIC=list(Value=best.aic$Value,DF=best.aic$DF,Lambda=best.aic$Lambda),
+              BIC=list(Value=best.bic$Value,DF=best.bic$DF,Lambda=best.bic$Lambda)))
 }
 
 BIC <- function(sse,df,sigma2,n) {
