@@ -7,6 +7,23 @@ Repos: CRAN=http://cran.rstudio.com,
     BioCexp=http://bioconductor.org/packages/3.1/data/experiment,
     BioCextra=http://bioconductor.org/packages/3.1/extra
 
+Package: foreach
+Source: CRAN
+Version: 1.4.2
+Hash: c306afbbf5cc2608170bc7205bf58bea
+Requires: iterators
+
+Package: glmnet
+Source: CRAN
+Version: 2.0-2
+Hash: bce976ec81989e5a08974dc01d8d3d08
+Requires: foreach
+
+Package: iterators
+Source: CRAN
+Version: 1.0.7
+Hash: 5b4df529141f993389b8fb24d56fe531
+
 Package: packrat
 Source: CRAN
 Version: 0.4.4

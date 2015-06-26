@@ -1,28 +1,56 @@
 library(glmnet)
 library(ggplot2)
 
-lasic <- function(fit,X,y,metric="BIC",df.method="naive",plotit=FALSE) {
+lasic <- function(fit,X,y,plotit=FALSE) {
   lambda.seq <- fit$lambda
   n <- length(y)
-  sigma2 <- 1
-  bic.seq <- NULL
-  aic.seq <- NULL
+  sigma2 <- estimate_sigma2(fit,X,y)
+  results.df <- NULL
   for(i in 1:length(lambda.seq)) {
     lambda <- lambda.seq[i]
     sse <- sum( (predict(fit,X,s=lambda) - y)^2 )
     df <- fit$df[i]
     bic.lambda <- BIC(sse,df,sigma2,n)
-    bic.seq <- c(bic.seq,bic.lambda)
+    aic.lambda <- AIC(sse,df,sigma2,n)
     
-    aic.lambda <- BIC(sse,df,sigma2,n)
-    aic.seq <- c(aic.seq,aic.lambda)
-  }  
+    results.df <- rbind(results.df,c(lambda,df,"BIC",bic.lambda))
+    results.df <- rbind(results.df,c(lambda,df,"AIC",aic.lambda))
+  }
+  results.df <- data.frame(results.df,stringsAsFactors=FALSE)
+  names(results.df) <- c("Lambda","DF","Type","Value")
+  results.df$Lambda <- as.numeric(results.df$Lambda)
+  results.df$DF <- as.numeric(results.df$DF)
+  results.df$Type <- as.factor(results.df$Type)
+  results.df$Value <- as.numeric(results.df$Value)
+  if(plotit) {
+    best.bic <- results.df %>%
+    x.best <- results.df$Lambda[best.point]
+    y.best <- results.df$Value[best.point]
+    lbl <- paste0("Num Non-zero: ",results.df$DF[best.point])
+    ggplot(results.df,aes(x=log(Lambda),y=Value,color=Type)) + 
+      geom_line(size=1.5) + 
+      geom_vline(xintercept=x.best) +
+      annotate("text",label=lbl,x=x.best,y=y.best) +
+      theme_bw()
+  }
 }
 
 BIC <- function(sse,df,sigma2,n) {
   return( sse/(n*sigma2) + (log(n)/n)*df )
 }
 
-AIC <- function(fit,df) {
+AIC <- function(sse,df,sigma2,n) {
   return( sse/(n*sigma2) + (2/n)*df )
 }
+
+estimate_sigma2 <- function(fit,X,y) {
+  ## Get sigma2 estimate from the full model ##
+  lambda.min <- fit$lambda[which.min(fit$lambda)]
+  df.max <- fit$df[which.min(fit$lambda)]
+  n <- length(y)
+  yhat <- predict(fit,X,s=lambda.min)
+  RSS <- sum( (y-yhat)^2 )
+  s2 <-  RSS / (n - df.max)
+  return( (n-df.max)/n *s2 )
+}
+
