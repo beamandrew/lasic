@@ -28,10 +28,11 @@ lasic <- function(fit,X,y,plotit=FALSE) {
   best.aic <- results.df %>% filter(Type=="AIC") %>% filter(Value == min(Value))
   if(plotit) {
     lbl <- paste0("BIC Nonzero: ",best.bic$DF,"\nAIC Nonzero: ",best.aic$DF)
-    ggplot(results.df,aes(x=log(Lambda),y=Value,color=Type)) + 
-      geom_line(size=1) + 
-      annotate("text",label=lbl,x=log(median(results.df$Lambda)),y=max(results.df$Value)) +
-      theme_bw()
+    p <- ggplot(results.df,aes(x=log(Lambda),y=Value,color=Type)) + 
+          geom_line(size=1) + 
+          annotate("text",label=lbl,x=log(median(results.df$Lambda)),y=max(results.df$Value)) +
+          theme_bw()
+    print(p)
   }
   return(list(AIC=list(Value=best.aic$Value,DF=best.aic$DF,Lambda=best.aic$Lambda),
               BIC=list(Value=best.bic$Value,DF=best.bic$DF,Lambda=best.bic$Lambda)))
@@ -52,7 +53,7 @@ estimate_sigma2 <- function(fit,X,y) {
   n <- length(y)
   yhat <- predict(fit,X,s=lambda.min)
   RSS <- sum( (y-yhat)^2 )
-  s2 <-  RSS / (n - df.max)
-  return( (n-df.max)/n *s2 )
+  s2 <-  RSS / n ## We're going to use the MLE here
+  return( s2 )
 }
 
