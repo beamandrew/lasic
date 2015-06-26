@@ -3,6 +3,7 @@ library(ggplot2)
 library(magrittr)
 library(dplyr)
 
+# Main Function #
 lasic <- function(fit,X,y,plotit=FALSE) {
   lambda.seq <- fit$lambda
   n <- length(y)

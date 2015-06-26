@@ -70,12 +70,16 @@ n.reps <- 20
 for(n.drug in drug.seq) {
   for(rep in n.reps) {
     beta <- rep(0,ncol(X))
-    beta[-drug.cols] <- rnorm(n=(ncol(X)-length(drug.cols)),sd=0.5)
+    beta[-drug.cols] <- rnorm(n=(ncol(X)-length(drug.cols)),sd=1)
     pos.drugs <- sample(drug.cols,size=n.drug)
-    beta[pos.drugs] <- rnorm(n=n.drug)
-    y <- 1 + X %*% beta + rnorm(n=nrow(X),sd=0.25)
-    fit <- glmnet(x=X,y=y,alpha=1,intercept=TRUE,standardize = TRUE)
+    beta[pos.drugs] <- rnorm(n=n.drug,sd=1)
+    y <- X %*% beta + rnorm(n=nrow(X),sd=0.25) + 1
+    fit <- glmnet(x=X,y=y,alpha=1,intercept=TRUE,standardize = FALSE)
     params <- lasic(fit,X,y,T)
+    beta.aic = coef(fit,s=params$AIC$Lambda)[-1,1]
+    beta.bic = coef(fit,s=params$BIC$Lambda)[-1,1]
+    cor(beta,beta.bic)
+    cor(beta,beta.aic)
   }
 }
 
