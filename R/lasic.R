@@ -8,9 +8,10 @@ lasic <- function(fit,X,y,plotit=FALSE) {
   n <- length(y)
   sigma2 <- estimate_sigma2(fit,X,y)
   results.df <- NULL
+  predictions <- predict(fit,X)
   for(i in 1:length(lambda.seq)) {
     lambda <- lambda.seq[i]
-    sse <- sum( (predict(fit,X,s=lambda) - y)^2 )
+    sse <- sum( (predictions[,i] - y)^2 )
     df <- fit$df[i]
     bic.lambda <- BIC(sse,df,sigma2,n)
     aic.lambda <- AIC(sse,df,sigma2,n)

@@ -36,23 +36,48 @@ names(results) <- c("p","frac_nonzero","num_nonzero","n","rep","AIC_nz","BIC_nz"
 
 df <- results %>% 
         group_by(n,p,frac_nonzero,num_nonzero) %>% 
-        summarize(AIC_nz=mean(AIC_nz),BIC_nz=mean(BIC_nz),AIC_tp=mean(AIC_tp),BIC_tp=mean(BIC_tp)) %>%
+        summarize(AIC_nz=mean(AIC_nz),
+                  BIC_nz=mean(BIC_nz),
+                  AIC_tp=mean(AIC_tp),
+                  BIC_tp=mean(BIC_tp)) %>%
+        mutate(AIC_eff=num_nonzero/AIC_nz,BIC_eff=num_nonzero/BIC_nz) %>%
         melt(id=c("n","p","frac_nonzero","num_nonzero"))
 
 
 df %>% 
-  filter(variable == "AIC_tp") %>%
-  ggplot(aes(x=n,y=value,color=factor(p))) +
+  filter(variable == "AIC_tp" | variable == "BIC_tp") %>%
+  ggplot(aes(x=n,y=value,color=variable)) +
+  facet_wrap(~ p) +
   geom_line() +
   ylab("Fraction of True Covariates with Non-zero Estimates") +
-  ggtitle("AIC")
+  theme_bw()
 
 df %>% 
-  filter(variable == "BIC_tp") %>%
-  ggplot(aes(x=n,y=value,color=factor(p))) +
+  filter(variable == "AIC_eff" | variable == "BIC_eff") %>%
+  ggplot(aes(x=n,y=value,color=variable)) +
+  facet_wrap(~ p) +
   geom_line() +
-  ylab("Fraction of True Covariates with Non-zero Estimates") +
-  ggtitle("BIC")
+  ylab("Effeciency") +
+  theme_bw()
+
+
+## Use Gene Expression Data Now ##
+load("~/Documents/Research/Druggable Genome/cmap/processed_data/X.RData")
+drug.cols <- grep("_drug",colnames(X))
+
+drug.seq <- c(1,10,25,50,100,200,500,1000)
+n.reps <- 20
+for(n.drug in drug.seq) {
+  for(rep in n.reps) {
+    beta <- rep(0,ncol(X))
+    beta[-drug.cols] <- rnorm(n=(ncol(X)-length(drug.cols)),sd=0.5)
+    pos.drugs <- sample(drug.cols,size=n.drug)
+    beta[pos.drugs] <- rnorm(n=n.drug)
+    y <- 1 + X %*% beta + rnorm(n=nrow(X),sd=0.25)
+    fit <- glmnet(x=X,y=y,alpha=1,intercept=TRUE,standardize = TRUE)
+    params <- lasic(fit,X,y,T)
+  }
+}
 
 
 
