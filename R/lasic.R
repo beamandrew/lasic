@@ -1,6 +1,7 @@
 library(glmnet)
+library(ggplot2)
 
-lasic <- function(fit,X,y,metric="BIC",df.method="naive") {
+lasic <- function(fit,X,y,metric="BIC",df.method="naive",plotit=FALSE) {
   lambda.seq <- fit$lambda
   n <- length(y)
   sigma2 <- 1
@@ -23,5 +24,5 @@ BIC <- function(sse,df,sigma2,n) {
 }
 
 AIC <- function(fit,df) {
-  return( sse/(n*sigma2) + (log(n)/n)*df )
+  return( sse/(n*sigma2) + (2/n)*df )
 }
