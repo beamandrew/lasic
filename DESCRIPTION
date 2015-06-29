@@ -1,9 +1,14 @@
 Package: lasic
 Type: Package
-Title: What the package does (short line)
+Title: Lasic - Information Criteria for LASSO Models
 Version: 1.0
 Date: 2015-06-26
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Author: Andrew L. Beam
+Maintainer: Andrew L. Beam <Andrew_Beam@hms.harvard.edu>
+Description: Computes BIC and AIC for LASSO models fit using glmnet
 License: What license is it under?
+Imports:
+    dplyr,
+    ggplot2,
+    magrittr,
+    dplyr
